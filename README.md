@@ -220,11 +220,19 @@ POST followed by GET was checked manually as well. Automated simulator integrati
 
 ## Known limitations and production considerations
 
-The bank call and local save are not atomic. If the bank processes a payment but persistence fails, the gateway may have no record of that result. A timeout can also leave the bank outcome unknown, so blindly retrying could duplicate a payment.
+### Payment consistency
 
-For production, I would consider saving a Processing record first, then calling the bank with a stable reference and bank-supported idempotency. 
-That still leaves failure windows: a background reconciliation process needs a way to query the bank's authoritative result. The supplied simulator has no status lookup or idempotency support, so this recovery flow is not implemented.
+The bank call and local database write cannot be performed as one atomic transaction. For example, the bank could authorize a payment but the subsequent database write could fail, leaving the gateway without a record of the successful authorization.
 
+A more resilient design would first persist the payment as `Processing` with a stable payment ID, then send that ID to the bank as an idempotency reference. If the bank succeeds but updating the local payment to `Authorized` fails, the gateway can safely leave the payment as `Processing` rather than incorrectly reporting it as declined or authorized.
+
+The gateway could return `202 Accepted` for an unresolved payment and reconcile it asynchronously by querying the bank for the authoritative outcome. The merchant could subsequently retrieve the final status using the payment ID.
+
+The supplied simulator does not provide idempotency or payment-status lookup, so this recovery flow is not implemented.
+
+### Storage
 Storage is temporary and local to one API instance. It is not shared across instances and has no retention limit. Durable storage would be needed before scaling across instances. I kept reads and writes in one API; separating them or introducing CQRS would need evidence of a useful benefit rather than traffic assumptions alone.
+
+### Merchant authentication and payment security
 
 This exercise does not implement merchant authentication, payment ownership checks, or production payment-data controls. Those would need addressing before real use. Last-four-only storage and careful logging reduce exposure but do not make this a production-ready or compliance-certified payment gateway.
