@@ -1,23 +1,10 @@
+using PaymentGateway.Api.Extensions;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
-{
-    options.InvalidModelStateResponseFactory = context =>
-    {
-        var problem = new Microsoft.AspNetCore.Mvc.ValidationProblemDetails(context.ModelState)
-        {
-            Status = StatusCodes.Status400BadRequest,
-            Title = "Payment request rejected."
-        };
-        problem.Extensions["paymentStatus"] = "Rejected";
-
-        var response = new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(problem);
-        response.ContentTypes.Add("application/problem+json");
-        return response;
-    };
-});
+builder.Services.AddPaymentGatewayControllers();
 builder.Services.AddExceptionHandler<PaymentGateway.Api.Errors.ApiExceptionHandler>();
 builder.Services.AddProblemDetails();
 // The custom handler records safe error metadata; avoid duplicate framework exception dumps.
