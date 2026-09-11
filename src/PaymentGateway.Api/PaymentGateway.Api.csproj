@@ -7,7 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MediatR" Version="12.5.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\PaymentGateway.Core\PaymentGateway.Core.csproj" />
+    <ProjectReference Include="..\..\PaymentGateway.Infra\PaymentGateway.Infra.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Commands\" />
+    <Folder Include="CommandHandlers\" />
+    <Folder Include="QueryHandlers\" />
+    <Folder Include="Queries\" />
   </ItemGroup>
 
 </Project>
