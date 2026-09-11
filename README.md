@@ -230,6 +230,16 @@ The gateway could return `202 Accepted` for an unresolved payment and reconcile 
 
 The supplied simulator does not provide idempotency or payment-status lookup, so this recovery flow is not implemented.
 
+### Idempotency
+
+The current POST operation is not idempotent. Each request creates a new payment ID, so retrying the same request could result in the acquiring bank receiving the payment more than once.
+
+In production, I would require a merchant-supplied idempotency key and persist it with a unique constraint, scoped to the merchant. Repeated requests with the same key could then return the previously recorded payment result rather than processing the payment again.
+
+The database uniqueness constraint is important for concurrent requests; a separate check-then-insert would still have a race condition.
+
+This was not implemented to keep the solution within the scope of the exercise.
+
 ### Storage
 Storage is temporary and local to one API instance. It is not shared across instances and has no retention limit. Durable storage would be needed before scaling across instances. I kept reads and writes in one API; separating them or introducing CQRS would need evidence of a useful benefit rather than traffic assumptions alone.
 
