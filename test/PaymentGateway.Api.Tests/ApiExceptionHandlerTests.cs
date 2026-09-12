@@ -23,9 +23,8 @@ public class ApiExceptionHandlerTests
     [InlineData(null, 500)]
     public async Task FailureReturnsSafeProblemDetails(BankFailure? failure, int expectedStatus)
     {
-        Exception exception = failure.HasValue
-            ? new BankException(failure.Value)
-            : new InvalidOperationException("Private internal failure details");
+        Exception exception = failure.HasValue ? new BankException(failure.Value) : new InvalidOperationException("Private internal failure details");
+        
         var sender = new Mock<ISender>();
         sender.Setup(service => service.Send(It.IsAny<ProcessPaymentCommand>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(exception);
@@ -42,6 +41,7 @@ public class ApiExceptionHandlerTests
             BaseAddress = new Uri("https://localhost")
         });
 
+        // Act
         using var response = await client.PostAsJsonAsync("/api/v1/payments", new
         {
             CardNumber = "2222405343240007",
@@ -51,7 +51,8 @@ public class ApiExceptionHandlerTests
             Amount = 1050,
             Cvv = "012"
         });
-
+        
+        // Assert   
         Assert.Equal(expectedStatus, (int)response.StatusCode);
         Assert.Equal("application/problem+json", response.Content.Headers.ContentType!.MediaType);
         var content = await response.Content.ReadAsStringAsync();
