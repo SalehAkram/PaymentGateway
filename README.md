@@ -245,4 +245,4 @@ Storage is temporary and local to one API instance. It is not shared across inst
 
 ### Merchant authentication and payment security
 
-This exercise does not implement merchant authentication, payment ownership checks, or production payment-data controls. Those would need addressing before real use. Last-four-only storage and careful logging reduce exposure but do not make this a production-ready or compliance-certified payment gateway.
+This exercise does not implement merchant authentication, payment ownership checks. In production, merchants could authenticate using API keys
